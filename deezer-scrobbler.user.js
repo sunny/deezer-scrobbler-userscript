@@ -26,9 +26,9 @@ as.last_track = null
 
 // Go !
 window.addEventListener('load', function() {
-  as.log('Token:', as.token)
-  as.log('User:', as.user)
-  as.log('Session key:', as.session_key)
+  as.log('Token: ' + as.token)
+  as.log('User: ' + as.user)
+  as.log('Session key: ' + as.session_key)
 
   // No token? Get one, then redirect the user to authorize app
   if (!as.token)
@@ -44,7 +44,7 @@ window.addEventListener('load', function() {
     as.get_session(function() {
       GM_setValue('as_session_key', as.session_key)
       GM_setValue('as_user', as.user)
-      as.log('Got session')
+      as.log('Got session!')
     })
 
   // First, be polite
@@ -61,7 +61,7 @@ window.addEventListener('load', function() {
 
 // Looped method that finds out the current song and scrobbles
 as.try_scrobbling = function() {
-  console.log("Try scrobbling…")
+  as.log("Checking the need to scrobble…")
 
   // Get the Deezer track from the page title
   var artist = document.title.split(' - ')[1],
@@ -91,11 +91,6 @@ as.try_scrobbling = function() {
   // Now playing this track
   as.now_playing(artist, track)
 
-}
-
-// Logger
-as.log = function() {
-  if (console && console.info) console.info('AS: ', arguments)
 }
 
 // Method to make calls to Flickr's 2.0 Web Service
@@ -196,6 +191,7 @@ as.handshake = function(callback) {
     onload: function(response) {
       var res = response.responseText.split('\n');
       if (res[0] == 'OK') {
+        as.log('Handshake OK!')
         as.session_id = res[1]
         as.now_playing_url = res[2]
         as.submission_url = res[3]
@@ -211,7 +207,7 @@ as.handshake = function(callback) {
 // Submit a "now playing" to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
 as.now_playing = function(artist, track) {
-  as.log('Now playing '+artist+' - '+track)
+  as.log('Now playing: '+artist+' - '+track+'…')
 
   var post_string = as.helpers.urlencode({
     s: as.session_id, // given by the handshake
@@ -246,7 +242,7 @@ as.now_playing = function(artist, track) {
 // Submit a song to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
 as.scrobble = function(artist, track, play_start_time) {
-  as.log('Scrobbling '+artist+' - '+track + ' (' + new Date(play_start_time*1000)+')')
+  as.log('Scrobbling: '+artist+' - '+track + '…')
 
   var post_string = as.helpers.urlencode({
     's': as.session_id, // given by the handshake
@@ -280,6 +276,11 @@ as.scrobble = function(artist, track, play_start_time) {
   });
 }
 
+
+// Logger
+as.log = function(line) {
+  if (console && console.info) console.info('AS:', line)
+}
 
 
 /* Helpers */
