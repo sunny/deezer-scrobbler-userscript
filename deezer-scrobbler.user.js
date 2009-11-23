@@ -26,7 +26,7 @@ as.last_track = null
 
 // Go !
 window.addEventListener('load', function() {
-  GM_log('Token: ' + as.token +' User: '+ as.user +'Session key: ' + as.session_key)
+  GM_log('Token: ' + as.token +' User: '+ as.user +' Session key: ' + as.session_key)
 
   // No token? Get one, then redirect the user to authorize app
   if (!as.token)
@@ -58,20 +58,23 @@ window.addEventListener('load', function() {
 
 // Looped method that finds out the current song and scrobbles
 as.try_scrobbling = function() {
-  GM_log("Checking the need to scrobble…")
 
   // Get the Deezer track from the page title
   var artist = document.title.split(' - ')[1],
       track = document.title.split(' - ')[0];
-  if (document.title.match(/Deezer/) || !artist || !track)
+  if (document.title.match(/Deezer/) || !artist || !track) {
+    GM_log("Not scrobbling: no song found");
     return;
+  }
 
   var timestamp = as.helpers.utc_timestamp(),
       seconds_since_last_update = timestamp - as.last_update
 
   // cancel if still the same track
-  if (artist == as.last_artist && track == as.last_track)
+  if (artist == as.last_artist && track == as.last_track) {
+    GM_log("Not scrobbling: still the same track");
     return;
+  }
 
   // Scrobble previous track
   if (as.last_update && as.last_artist && as.last_track) {
@@ -127,10 +130,10 @@ as.get_token = function(callback) {
     method: 'auth.gettoken',
   }
   as.ws_call(args, function(response) {
-    var node = document.createElement('div')
-    node.innerHTML = response.responseText
-    if (node.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
-      as.token = node.getElementsByTagName('token')[0].innerHTML
+    var parser = new DOMParser()
+    var dom = parser.parseFromString(response.responseText, "application/xml")
+    if (dom.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
+      as.token = dom.getElementsByTagName('token')[0].innerHTML
       GM_log('Got token OK')
       callback.call()
     } else
@@ -148,11 +151,11 @@ as.get_session = function(callback) {
     token: as.token,
   }
   as.ws_call(args, function(response) {
-    var node = document.createElement('div')
-    node.innerHTML = response.responseText
-    if (node.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
-      as.session_key = node.getElementsByTagName('key')[0].innerHTML
-      as.user = node.getElementsByTagName('name')[0].innerHTML
+    var parser = new DOMParser()
+    var dom = parser.parseFromString(response.responseText, "application/xml")
+    if (dom.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
+      as.session_key = dom.getElementsByTagName('key')[0].innerHTML
+      as.user = dom.getElementsByTagName('name')[0].innerHTML
       GM_log('Got session OK')
       callback.call()
     } else
