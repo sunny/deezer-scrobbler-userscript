@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          Deezer Scrobbler
-// @namespace     http://github.com/sunny/deezer-scrobbler-userscript
+// @namespace     http://sunfox.org/
 // @description   Scrobbles the currently playing title in deezer to last.fm
 // @include       http://www.deezer.com/*
 // ==/UserScript==
@@ -26,9 +26,7 @@ as.last_track = null
 
 // Go !
 window.addEventListener('load', function() {
-  as.log('Token: ' + as.token)
-  as.log('User: ' + as.user)
-  as.log('Session key: ' + as.session_key)
+  GM_log('Token: ' + as.token +' User: '+ as.user +'Session key: ' + as.session_key)
 
   // No token? Get one, then redirect the user to authorize app
   if (!as.token)
@@ -44,7 +42,6 @@ window.addEventListener('load', function() {
     as.get_session(function() {
       GM_setValue('as_session_key', as.session_key)
       GM_setValue('as_user', as.user)
-      as.log('Got session!')
     })
 
   // First, be polite
@@ -61,7 +58,7 @@ window.addEventListener('load', function() {
 
 // Looped method that finds out the current song and scrobbles
 as.try_scrobbling = function() {
-  as.log("Checking the need to scrobble…")
+  GM_log("Checking the need to scrobble…")
 
   // Get the Deezer track from the page title
   var artist = document.title.split(' - ')[1],
@@ -124,7 +121,7 @@ as.create_api_sig = function(hash) {
 // Fetch a request token
 // http://www.lastfm.fr/api/desktopauth#6
 as.get_token = function(callback) {
-  as.log('Getting token…')
+  GM_log('Getting token…')
   var args = {
     api_key: as.api_key,
     method: 'auth.gettoken',
@@ -134,16 +131,17 @@ as.get_token = function(callback) {
     node.innerHTML = response.responseText
     if (node.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
       as.token = node.getElementsByTagName('token')[0].innerHTML
-      as.log('Found token '+as.token)
+      GM_log('Got token OK')
       callback.call()
     } else
-      as.log('Error: '+response.responseText)
+      GM_log('Error: '+response.responseText)
   })
 }
 
 // Fetch a web service session
 // as described in http://www.lastfm.fr/api/desktopauth#4
 as.get_session = function(callback) {
+  GM_log('Getting session…')
   var args = {
     api_key: as.api_key,
     method: 'auth.getsession',
@@ -155,17 +153,17 @@ as.get_session = function(callback) {
     if (node.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
       as.session_key = node.getElementsByTagName('key')[0].innerHTML
       as.user = node.getElementsByTagName('name')[0].innerHTML
-      as.log('Found session '+as.session_key)
+      GM_log('Got session OK')
       callback.call()
     } else
-      as.log('Error: '+response.responseText)
+      GM_log('Error: '+response.responseText)
   })
 }
 
 // Handshaking mechanism for last.fm
 // See http://www.lastfm.fr/api/submissions#1.4
 as.handshake = function(callback) {
-  as.log('Handshaking…')
+  GM_log('Handshaking…')
   var timestamp = as.helpers.utc_timestamp() // UTC timestamp
   var token = as.helpers.md5(as.shared_secret + timestamp)
 
@@ -191,14 +189,14 @@ as.handshake = function(callback) {
     onload: function(response) {
       var res = response.responseText.split('\n');
       if (res[0] == 'OK') {
-        as.log('Handshake OK!')
         as.session_id = res[1]
         as.now_playing_url = res[2]
         as.submission_url = res[3]
+        GM_log('Handshake OK')
         callback.call()
         return
       }
-      as.log('Error: '+response.responseText);
+      GM_log('Error: '+response.responseText);
     }
   })
 }
@@ -207,7 +205,7 @@ as.handshake = function(callback) {
 // Submit a "now playing" to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
 as.now_playing = function(artist, track) {
-  as.log('Now playing: '+artist+' - '+track+'…')
+  GM_log('Now playing: '+artist+' - '+track+'…')
 
   var post_string = as.helpers.urlencode({
     s: as.session_id, // given by the handshake
@@ -231,9 +229,9 @@ as.now_playing = function(artist, track) {
     data: post_string,
     onload: function(response) {
       if (response.responseText.split('\n')[0] == 'OK')
-        as.log('Added now playing!')
+        GM_log('Now playing OK')
       else
-        as.log('Error: '+response.responseText)
+        GM_log('Error: '+response.responseText)
     }
   });
 }
@@ -242,8 +240,7 @@ as.now_playing = function(artist, track) {
 // Submit a song to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
 as.scrobble = function(artist, track, play_start_time) {
-  as.log('Scrobbling: '+artist+' - '+track + '…')
-
+  GM_log('Scrobbling: '+artist+' - '+track + '…')
   var post_string = as.helpers.urlencode({
     's': as.session_id, // given by the handshake
     'a[0]': artist,
@@ -269,17 +266,11 @@ as.scrobble = function(artist, track, play_start_time) {
     data: post_string,
     onload: function(response) {
       if (response.responseText.split('\n')[0] == 'OK')
-        as.log('Scrobbled!')
+        GM_log('Scrobbling OK')
       else
-        as.log('Error: '+response.responseText)
+        GM_log('Error: '+response.responseText)
     }
   });
-}
-
-
-// Logger
-as.log = function(line) {
-  if (console && console.info) console.info('AS:', line)
 }
 
 
@@ -515,6 +506,4 @@ as.helpers.md5 = function (string) {
   return temp.toLowerCase();
 }
 
-
-as.log('Loaded')
 
