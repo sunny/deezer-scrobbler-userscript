@@ -5,51 +5,51 @@
 // @include       http://www.deezer.com/*
 // ==/UserScript==
 
-as = {}
+dzs = {}
 
 // Lastfm API vars
-as.user = GM_getValue('as_user')
-as.token = GM_getValue('as_token')
-as.session_key = GM_getValue('as_session_key')
-as.api_key = '2f4a8d27f538fc7bd5a772a9f311197f'
-as.shared_secret = '14e2dfb03533fb08b0aa59020e7a0bb1'
-as.client_id = 'tst' // for test only
-as.client_version = '1.0'
-as.now_playing_url = null
-as.submission_url = null
-as.session_id = null
+dzs.user = GM_getValue('dzs_user')
+dzs.token = GM_getValue('dzs_token')
+dzs.session_key = GM_getValue('dzs_session_key')
+dzs.api_key = '2f4a8d27f538fc7bd5a772a9f311197f'
+dzs.shared_secret = '14e2dfb03533fb08b0aa59020e7a0bb1'
+dzs.client_id = 'dzs'
+dzs.client_version = '1.0'
+dzs.now_playing_url = null
+dzs.submission_url = null
+dzs.session_id = null
 
 // Deezer Scrobbler vars
-as.last_update = null
-as.last_artist = null
-as.last_track = null
+dzs.last_update = null
+dzs.last_artist = null
+dzs.last_track = null
 
 // Go !
 window.addEventListener('load', function() {
-  GM_log('Token: ' + as.token +' User: '+ as.user +' Session key: ' + as.session_key)
+  GM_log('Token: ' + dzs.token +' User: '+ dzs.user +' Session key: ' + dzs.session_key)
 
   // No token? Get one, then redirect the user to authorize app
-  if (!as.token)
-    return as.get_token(function() {
-      GM_setValue('as_token', as.token)
-      var url = 'http://www.last.fm/api/auth/?api_key='+as.api_key+'&token='+as.token
+  if (!dzs.token)
+    return dzs.get_token(function() {
+      GM_setValue('dzs_token', dzs.token)
+      var url = 'http://www.last.fm/api/auth/?api_key='+dzs.api_key+'&token='+dzs.token
       alert("Pour utiliser Deezer Scrobbler vous devez accepter l'application dans last.fm. Quand vous cliquerez sur OK une page last.fm s'ouvrira qui vous permettra d'autoriser Deezer Scrobbler à scrobbler à votre place. Une fois accepté merci de recharger Deezer.")
       window.open(url)
     })
 
   // No session key? Get one with the user name as well
-  if (!as.session_key)
-    as.get_session(function() {
-      GM_setValue('as_session_key', as.session_key)
-      GM_setValue('as_user', as.user)
+  if (!dzs.session_key)
+    dzs.get_session(function() {
+      GM_setValue('dzs_session_key', dzs.session_key)
+      GM_setValue('dzs_user', dzs.user)
     })
 
   // First, be polite
-  as.handshake(function() {
+  dzs.handshake(function() {
 
     // Then try scrobbling every 30 seconds
-    as.try_scrobbling()
-    setInterval(as.try_scrobbling, 30*1000)
+    dzs.try_scrobbling()
+    setInterval(dzs.try_scrobbling, 30*1000)
 
   })
 
@@ -57,7 +57,7 @@ window.addEventListener('load', function() {
 
 
 // Looped method that finds out the current song and scrobbles
-as.try_scrobbling = function() {
+dzs.try_scrobbling = function() {
 
   // Get the Deezer track from the page title
   var artist = document.title.split(' - ')[1],
@@ -67,36 +67,36 @@ as.try_scrobbling = function() {
     return;
   }
 
-  var timestamp = as.helpers.utc_timestamp(),
-      seconds_since_last_update = timestamp - as.last_update
+  var timestamp = dzs.helpers.utc_timestamp(),
+      seconds_since_last_update = timestamp - dzs.last_update
 
   // cancel if still the same track
-  if (artist == as.last_artist && track == as.last_track) {
+  if (artist == dzs.last_artist && track == dzs.last_track) {
     GM_log("Not scrobbling: still the same track");
     return;
   }
 
   // Scrobble previous track
-  if (as.last_update && as.last_artist && as.last_track) {
-    as.scrobble(as.last_artist, as.last_track, as.last_update)
-    as.last_artist = artist
-    as.last_track = track
-    as.last_update = as.helpers.utc_timestamp()
+  if (dzs.last_update && dzs.last_artist && dzs.last_track) {
+    dzs.scrobble(dzs.last_artist, dzs.last_track, dzs.last_update)
+    dzs.last_artist = artist
+    dzs.last_track = track
+    dzs.last_update = dzs.helpers.utc_timestamp()
   } else {
-    as.last_artist = artist
-    as.last_track = track
-    as.last_update = as.helpers.utc_timestamp()
+    dzs.last_artist = artist
+    dzs.last_track = track
+    dzs.last_update = dzs.helpers.utc_timestamp()
   }
 
   // Now playing this track
-  as.now_playing(artist, track)
+  dzs.now_playing(artist, track)
 
 }
 
 // Method to make calls to Flickr's 2.0 Web Service
-as.ws_call = function(args, callback) {
-  args.api_sig = as.create_api_sig(args)
-  var url = 'http://ws.audioscrobbler.com/2.0/?' + as.helpers.urlencode(args)
+dzs.ws_call = function(args, callback) {
+  args.api_sig = dzs.create_api_sig(args)
+  var url = 'http://ws.audioscrobbler.com/2.0/?' + dzs.helpers.urlencode(args)
   GM_xmlhttpRequest({
     method: 'GET',
     url: url,
@@ -111,29 +111,29 @@ as.ws_call = function(args, callback) {
 
 // Method to sign calls sent to last.fm
 // as described in http://www.lastfm.fr/api/desktopauth#6
-as.create_api_sig = function(hash) {
+dzs.create_api_sig = function(hash) {
   var sig = '';
-  var keys = as.helpers.hash_keys(hash).sort()
+  var keys = dzs.helpers.hash_keys(hash).sort()
   for (var i in keys) {
     var key = keys[i]
     sig += key + hash[key]
   }
-  return as.helpers.md5(sig + as.shared_secret)
+  return dzs.helpers.md5(sig + dzs.shared_secret)
 }
 
 // Fetch a request token
 // http://www.lastfm.fr/api/desktopauth#6
-as.get_token = function(callback) {
+dzs.get_token = function(callback) {
   GM_log('Getting token…')
   var args = {
-    api_key: as.api_key,
+    api_key: dzs.api_key,
     method: 'auth.gettoken',
   }
-  as.ws_call(args, function(response) {
+  dzs.ws_call(args, function(response) {
     var parser = new DOMParser()
     var dom = parser.parseFromString(response.responseText, "application/xml")
     if (dom.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
-      as.token = dom.getElementsByTagName('token')[0].innerHTML
+      dzs.token = dom.getElementsByTagName('token')[0].innerHTML
       GM_log('Got token OK')
       callback.call()
     } else
@@ -143,19 +143,19 @@ as.get_token = function(callback) {
 
 // Fetch a web service session
 // as described in http://www.lastfm.fr/api/desktopauth#4
-as.get_session = function(callback) {
+dzs.get_session = function(callback) {
   GM_log('Getting session…')
   var args = {
-    api_key: as.api_key,
+    api_key: dzs.api_key,
     method: 'auth.getsession',
-    token: as.token,
+    token: dzs.token,
   }
-  as.ws_call(args, function(response) {
+  dzs.ws_call(args, function(response) {
     var parser = new DOMParser()
     var dom = parser.parseFromString(response.responseText, "application/xml")
     if (dom.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
-      as.session_key = dom.getElementsByTagName('key')[0].innerHTML
-      as.user = dom.getElementsByTagName('name')[0].innerHTML
+      dzs.session_key = dom.getElementsByTagName('key')[0].innerHTML
+      dzs.user = dom.getElementsByTagName('name')[0].innerHTML
       GM_log('Got session OK')
       callback.call()
     } else
@@ -165,26 +165,26 @@ as.get_session = function(callback) {
 
 // Handshaking mechanism for last.fm
 // See http://www.lastfm.fr/api/submissions#1.4
-as.handshake = function(callback) {
+dzs.handshake = function(callback) {
   GM_log('Handshaking…')
-  var timestamp = as.helpers.utc_timestamp() // UTC timestamp
-  var token = as.helpers.md5(as.shared_secret + timestamp)
+  var timestamp = dzs.helpers.utc_timestamp() // UTC timestamp
+  var token = dzs.helpers.md5(dzs.shared_secret + timestamp)
 
   var args = {
     hs: 'true',
     p: '1.2.1',
-    c: as.client_id,
-    v: as.client_version,
-    u: as.user,
+    c: dzs.client_id,
+    v: dzs.client_version,
+    u: dzs.user,
     t: timestamp,
     a: token,
-    api_key: as.api_key,
-    sk: as.session_key
+    api_key: dzs.api_key,
+    sk: dzs.session_key
   }
 
   GM_xmlhttpRequest({
     method: 'GET',
-    url: 'http://post.audioscrobbler.com/?' + as.helpers.urlencode(args), 
+    url: 'http://post.audioscrobbler.com/?' + dzs.helpers.urlencode(args), 
     headers: {
       'Host': 'post.audioscrobbler.com',
       'User-agent': 'Mozilla/4.0 (compatible) Greasemonkey',
@@ -192,9 +192,9 @@ as.handshake = function(callback) {
     onload: function(response) {
       var res = response.responseText.split('\n');
       if (res[0] == 'OK') {
-        as.session_id = res[1]
-        as.now_playing_url = res[2]
-        as.submission_url = res[3]
+        dzs.session_id = res[1]
+        dzs.now_playing_url = res[2]
+        dzs.submission_url = res[3]
         GM_log('Handshake OK')
         callback.call()
         return
@@ -207,11 +207,11 @@ as.handshake = function(callback) {
 
 // Submit a "now playing" to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
-as.now_playing = function(artist, track) {
+dzs.now_playing = function(artist, track) {
   GM_log('Now playing: '+artist+' - '+track+'…')
 
-  var post_string = as.helpers.urlencode({
-    s: as.session_id, // given by the handshake
+  var post_string = dzs.helpers.urlencode({
+    s: dzs.session_id, // given by the handshake
     a: artist,
     t: track,
     b: '', // album title
@@ -222,7 +222,7 @@ as.now_playing = function(artist, track) {
 
   GM_xmlhttpRequest({
     method: 'POST',
-    url: as.now_playing_url,
+    url: dzs.now_playing_url,
     headers: {
       'User-agent': 'Mozilla/4.0 (compatible) Greasemonkey',
       'Accept': 'application/atom+xml,application/xml,text/xml',
@@ -242,10 +242,10 @@ as.now_playing = function(artist, track) {
 
 // Submit a song to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
-as.scrobble = function(artist, track, play_start_time) {
+dzs.scrobble = function(artist, track, play_start_time) {
   GM_log('Scrobbling: '+artist+' - '+track + '…')
-  var post_string = as.helpers.urlencode({
-    's': as.session_id, // given by the handshake
+  var post_string = dzs.helpers.urlencode({
+    's': dzs.session_id, // given by the handshake
     'a[0]': artist,
     't[0]': track,
     'i[0]': play_start_time, // must be in Unix UTC
@@ -259,7 +259,7 @@ as.scrobble = function(artist, track, play_start_time) {
 
   GM_xmlhttpRequest({
     method: 'POST',
-    url: as.submission_url,
+    url: dzs.submission_url,
     headers: {
       'User-agent': 'Mozilla/4.0 (compatible) Greasemonkey',
       'Accept': 'application/atom+xml,application/xml,text/xml',
@@ -279,14 +279,14 @@ as.scrobble = function(artist, track, play_start_time) {
 
 /* Helpers */
 
-as.helpers = {}
+dzs.helpers = {}
 
-as.helpers.utc_timestamp = function() {
+dzs.helpers.utc_timestamp = function() {
   return Math.round(Date.parse((new Date()).toUTCString()) / 1000)
 }
 
 // Returns array of keys of a hash
-as.helpers.hash_keys = function(hash) {
+dzs.helpers.hash_keys = function(hash) {
   var keys = [];
   for (var key in hash)
     if (hash.hasOwnProperty(key))
@@ -297,7 +297,7 @@ as.helpers.hash_keys = function(hash) {
 
 
 // urlencode for hashes
-as.helpers.urlencode = function(hash) {
+dzs.helpers.urlencode = function(hash) {
   string = ''
   for (key in hash) {
     if (string != '')
@@ -308,7 +308,7 @@ as.helpers.urlencode = function(hash) {
 }
 
 // MD5 digest algorithm via http://www.webtoolkit.info/
-as.helpers.md5 = function(string) { 
+dzs.helpers.md5 = function(string) { 
   function RotateLeft(lValue, iShiftBits) {
     return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
   }
