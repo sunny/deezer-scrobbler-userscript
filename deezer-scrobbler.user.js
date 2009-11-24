@@ -243,7 +243,7 @@ dzs.now_playing = function(artist, track) {
 // Submit a song to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
 dzs.scrobble = function(artist, track, play_start_time) {
-  GM_log('Scrobbling: '+artist+' - '+track + '…')
+  GM_log('Scrobbling: '+artist+' - '+track + ' (' + play_start_time + ')…')
   var post_string = dzs.helpers.urlencode({
     's': dzs.session_id, // given by the handshake
     'a[0]': artist,
@@ -281,8 +281,11 @@ dzs.scrobble = function(artist, track, play_start_time) {
 
 dzs.helpers = {}
 
+// Returns current time in Unix UTC seconds
 dzs.helpers.utc_timestamp = function() {
-  return Math.round(Date.parse((new Date()).toUTCString()) / 1000)
+  var date = new Date();
+  var utc = date.getTime() + date.getTimezoneOffset() * 60000;
+  return Math.round(utc / 1000);
 }
 
 // Returns array of keys of a hash
