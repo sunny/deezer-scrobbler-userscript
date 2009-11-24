@@ -47,9 +47,9 @@ window.addEventListener('load', function() {
   // First, be polite
   dzs.handshake(function() {
 
-    // Then try scrobbling every 30 seconds
+    // Then try scrobbling every 10 seconds
     dzs.try_scrobbling()
-    setInterval(dzs.try_scrobbling, 30*1000)
+    setInterval(dzs.try_scrobbling, 10*1000)
 
   })
 
