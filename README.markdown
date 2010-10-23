@@ -7,7 +7,9 @@ Requires
 --------
 
 - a Last.fm account
-- a browser with GreaseMonkey (Google Chrome, Mozilla Firefox with the [GreaseMonkey][] extension, etc.)
+- Mozilla Firefox with the [GreaseMonkey extension][greasemonkey]
+
+(Sorry, Google Chrome supports GreaseMonkey but doesn't support GM_get, GM_set and GM_xmlhttpRequest.)
 
 Install
 -------
