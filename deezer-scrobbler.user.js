@@ -61,6 +61,7 @@ dzs.current_track = function() {
   if (document.title.match(/Deezer/))
     return {}
   var title = document.title.replace(/ \|.*$/, ''),
+      title = title.replace(/ \(Album\)/, ''),
       title = title.split(' - '),
       artist = title[1],
       track = title[0]
@@ -255,7 +256,7 @@ dzs.scrobble = function(artist, track, play_start_time) {
     'a[0]': artist,
     't[0]': track,
     'i[0]': play_start_time, // must be in Unix UTC
-    'o[0]': 'U',
+    'o[0]': 'E',
     'r[0]': '', // rating of the track
     'l[0]': '', // length of the track
     'b[0]': '', // album title
