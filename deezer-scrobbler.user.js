@@ -60,7 +60,8 @@ dzs.main = function() {
 dzs.current_track = function() {
   if (document.title.match(/Deezer/))
     return {}
-  var title = document.title.split(' - '),
+  var title = document.title.replace(/ \|.*$/, ''),
+      title = title.split(' - '),
       artist = title[1],
       track = title[0]
   return { artist:artist, track:track }
