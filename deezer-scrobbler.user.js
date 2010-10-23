@@ -77,17 +77,17 @@ dzs.try_scrobbling = function() {
       track = current.track
 
   if (!artist || !track)
-    return console.log('Not scrobbling: no song found')
+    return GM_log('Not scrobbling: no song found')
 
   // cancel if still the same track
   if (artist == dzs.last_artist && track == dzs.last_track)
-    return console.log('Not scrobbling: still the same song')
+    return GM_log('Not scrobbling: still the same song')
 
   // cancel if too soon to scrobble
   var timestamp = dzs.helpers.utc_timestamp(),
       seconds_since_last_update = timestamp - dzs.last_update
   if (seconds_since_last_update < 30)
-    return console.log('Not scrobbling: last update was less than 30 seconds ago')
+    return GM_log('Not scrobbling: last update was less than 30 seconds ago')
 
   // Scrobble previous track
   if (dzs.last_update)
@@ -131,27 +131,27 @@ dzs.create_api_sig = function(hash) {
 // Fetch a request token
 // as described in http://www.lastfm.fr/api/desktopauth#6
 dzs.get_token = function(callback) {
-  console.log('Getting token…')
+  GM_log('Getting token…')
   var args = {
     api_key: dzs.api_key,
     method: 'auth.gettoken',
   }
   dzs.ws_call(args, function(response) {
-    console.log('Got token response')
+    GM_log('Got token response')
     var parser = new DOMParser(),
         dom = parser.parseFromString(response.responseText, "application/xml")
     if (dom.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
       GM_setValue('token', dom.getElementsByTagName('token')[0].textContent)
       callback.call()
     } else
-      console.log('Getting token error: '+response.responseText)
+      GM_log('Getting token error: '+response.responseText)
   })
 }
 
 // Fetch a web service session
 // as described in http://www.lastfm.fr/api/desktopauth#4
 dzs.get_session = function(callback) {
-  console.log('Getting session…')
+  GM_log('Getting session…')
   var args = {
     api_key: dzs.api_key,
     method: 'auth.getsession',
@@ -163,9 +163,9 @@ dzs.get_session = function(callback) {
     if (dom.getElementsByTagName('lfm')[0].getAttribute('status') == 'ok') {
       GM_setValue('session_key', dom.getElementsByTagName('key')[0].textContent)
       GM_setValue('user', dom.getElementsByTagName('name')[0].textContent)
-      console.log('Got session OK')
+      GM_log('Got session OK')
     } else
-      console.log('Getting session error: '+response.responseText)
+      GM_log('Getting session error: '+response.responseText)
     callback.call()
   })
 }
@@ -173,7 +173,7 @@ dzs.get_session = function(callback) {
 // Handshaking mechanism for last.fm
 // See http://www.lastfm.fr/api/submissions#1.4
 dzs.handshake = function(callback) {
-  console.log('Handshaking…')
+  GM_log('Handshaking…')
 
   var timestamp = dzs.helpers.utc_timestamp(), // UTC timestamp
       token = dzs.helpers.md5(dzs.shared_secret + timestamp)
@@ -200,12 +200,12 @@ dzs.handshake = function(callback) {
     onload: function(response) {
       var res = response.responseText.split('\n');
       if (res[0] != 'OK')
-        return console.log('Handshake error: '+response.responseText)
+        return GM_log('Handshake error: '+response.responseText)
 
       dzs.session_id = res[1]
       dzs.now_playing_url = res[2]
       dzs.submission_url = res[3]
-      console.log('Handshake OK')
+      GM_log('Handshake OK')
       callback.call()
     }
   })
@@ -215,7 +215,7 @@ dzs.handshake = function(callback) {
 // Submit a "now playing" to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
 dzs.now_playing = function(artist, track) {
-  console.log('Now playing: '+artist+' - '+track+'…')
+  GM_log('Now playing: '+artist+' - '+track+'…')
 
   var post_string = dzs.helpers.urlencode({
     s: dzs.session_id, // given by the handshake
@@ -239,9 +239,9 @@ dzs.now_playing = function(artist, track) {
     data: post_string,
     onload: function(response) {
       if (response.responseText.split('\n')[0] == 'OK')
-        console.log('Now playing OK')
+        GM_log('Now playing OK')
       else
-        console.log('Now playing error: '+response.responseText)
+        GM_log('Now playing error: '+response.responseText)
     }
   });
 }
@@ -250,7 +250,7 @@ dzs.now_playing = function(artist, track) {
 // Submit a song to last.fm
 // See http://www.lastfm.fr/api/submissions#3.2
 dzs.scrobble = function(artist, track, play_start_time) {
-  console.log('Scrobbling: '+artist+' - '+track + ' (' + play_start_time + ')…')
+  GM_log('Scrobbling: '+artist+' - '+track + '…')
   var post_string = dzs.helpers.urlencode({
     's': dzs.session_id, // given by the handshake
     'a[0]': artist,
@@ -276,9 +276,9 @@ dzs.scrobble = function(artist, track, play_start_time) {
     data: post_string,
     onload: function(response) {
       if (response.responseText.split('\n')[0] == 'OK')
-        console.log('Scrobbling OK')
+        GM_log('Scrobbling OK')
       else
-        console.log('Scrobbling Error:', response.responseText, post_string)
+        GM_log('Scrobbling Error:', response.responseText, post_string)
     }
   });
 }
