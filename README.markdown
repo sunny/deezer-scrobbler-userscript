@@ -27,3 +27,5 @@ It should be pretty trivial to adapt to any other website with the artist and tr
   [install]:      http://github.com/sunny/deezer-scrobbler-userscript/raw/master/deezer-scrobbler.user.js "Install this GreaseMonkey userscript"
   [github]:       http://github.com/sunny/deezer-scrobbler-userscript "The source on GitHub"
   [wtfpl]:        http://sam.zoy.org/wtfpl/ "Do What The Fuck You Want To Public License"
+  [sunny]:        http://sunfox.org "Sunny Ripert's den"
+
