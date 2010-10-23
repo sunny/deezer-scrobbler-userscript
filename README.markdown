@@ -7,7 +7,7 @@ Requires
 --------
 
 - a Last.fm account
-- a browser with GreaseMonkey (Google Chrome, Mozilla Firefox with the [GreaseMonkey][installff] extension, etc.)
+- a browser with GreaseMonkey (Google Chrome, Mozilla Firefox with the [GreaseMonkey][] extension, etc.)
 
 Install
 -------
@@ -28,8 +28,8 @@ It should be pretty trivial to adapt to any other website with the artist and tr
 
   [last.fm]:      http://last.fm "Last.fm"
   [deezer]:       http://deezer.com "Deezer"
-  [greasemonkey]: https://addons.mozilla.org/fr/firefox/addon/748  "Install GreaseMonkey addon to Firefox"
-  [installff]:    http://github.com/sunny/deezer-scrobbler-userscript/raw/master/deezer-scrobbler.user.js "Install this GreaseMonkey userscript"
+  [greasemonkey]: https://addons.mozilla.org/fr/firefox/addon/748  "Install GreaseMonkey extension to Firefox"
+  [install]:      http://github.com/sunny/deezer-scrobbler-userscript/raw/master/deezer-scrobbler.user.js "Install this GreaseMonkey userscript"
   [github]:       http://github.com/sunny/deezer-scrobbler-userscript "The source on GitHub"
   [wtfpl]:        http://sam.zoy.org/wtfpl/ "Do What The Fuck You Want To Public License"
   [sunny]:        http://sunfox.org "Sunny Ripert's den"
