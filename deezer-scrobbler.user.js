@@ -2,7 +2,7 @@
 // @name          Deezer Scrobbler
 // @namespace     http://sunfox.org/
 // @description   Scrobbles the currently playing title in deezer to last.fm
-// @include       http://www.deezer.com/*/music/*
+// @include       http://www.deezer.com/*
 // ==/UserScript==
 
 dzs = {}
