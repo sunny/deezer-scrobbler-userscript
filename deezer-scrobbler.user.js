@@ -21,6 +21,7 @@ dzs.session_id = null
 dzs.last_update = null
 dzs.last_artist = null
 dzs.last_track = null
+dzs.scrobbled = false
 
 
 dzs.main = function() {
@@ -80,39 +81,54 @@ dzs.current_track = function() {
   return {}
 }
 
-
 // Looped method that nowplays the current song and scrobbles the last one
 dzs.try_scrobbling = function() {
 
   var current = dzs.current_track(),
       artist = current.artist
-      track = current.track
+      track = current.track,
+      timestamp = dzs.helpers.utc_timestamp(),
+      seconds_since_last_update = timestamp - dzs.last_update
 
   if (!artist || !track)
     return GM_log('Not scrobbling: no song found')
 
-  // cancel if still the same track
-  if (artist == dzs.last_artist && track == dzs.last_track)
-    return GM_log('Not scrobbling: still the same song')
+  // first time?
+  if (!dzs.last_update) {
+    dzs.last_artist = artist
+    dzs.last_track = track
+    dzs.last_update = timestamp
+    dzs.scrobbled = false
+    dzs.now_playing(artist, track)
+    return
+  }
 
-  // cancel if too soon to scrobble
-  var timestamp = dzs.helpers.utc_timestamp(),
-      seconds_since_last_update = timestamp - dzs.last_update
-  if (seconds_since_last_update < 30)
-    return GM_log('Not scrobbling: last update was less than 30 seconds ago')
+  // scrobble if enough time has gone through
+  if (seconds_since_last_update > 240)
+    dzs.scrobble_last()
 
-  // Scrobble previous track
-  if (dzs.last_update)
-    dzs.scrobble(dzs.last_artist, dzs.last_track, dzs.last_update)
+  // track changed
+  if (artist != dzs.last_artist && track != dzs.last_track) {
+    dzs.scrobble_last()
 
-  dzs.last_artist = artist
-  dzs.last_track = track
-  dzs.last_update = dzs.helpers.utc_timestamp()
-
-  // Now playing this track
-  dzs.now_playing(artist, track)
+    dzs.last_artist = artist
+    dzs.last_track = track
+    dzs.last_update = timestamp
+    dzs.scrobbled = false
+    dzs.now_playing(artist, track)
+  }
 
 }
+
+
+// Scrobble the last song saved
+dzs.scrobble_last = function() {
+  if (!dzs.scrobbled && dzs.helpers.utc_timestamp() - dzs.last_update > 30) {
+    dzs.scrobble(dzs.last_artist, dzs.last_track, dzs.last_update)
+    dzs.scrobbled = true
+  }
+}
+
 
 // Method to make calls to last.fm's 2.0 Web Service
 dzs.ws_call = function(args, callback) {
