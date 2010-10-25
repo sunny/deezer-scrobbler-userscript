@@ -27,6 +27,7 @@ Code
 - Licence: [WTFPL][]
 
 It should be pretty trivial to adapt to any other website with the artist and track in the title of the page.
+As a bonus this works on accuradio.com's player.
 
   [last.fm]:      http://last.fm "Last.fm"
   [deezer]:       http://deezer.com "Deezer"

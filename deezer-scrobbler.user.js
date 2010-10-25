@@ -3,6 +3,7 @@
 // @namespace     http://sunfox.org/
 // @description   Scrobbles the currently playing title in deezer to last.fm
 // @include       http://www.deezer.com/*
+// @include       http://player.accuradio.com/player/slipstream/*
 // ==/UserScript==
 
 dzs = {}
@@ -55,17 +56,28 @@ dzs.main = function() {
 
 }
 
-// Returns an object with the current artist and track
-// taken from the page title
+// Returns an object with the current artist and track taken from the page
+// Example:
+//  dzs.current_track() # => { artist: "Electric Six", track: "Gay Bar" }
 dzs.current_track = function() {
-  if (document.title.match(/Deezer/))
-    return {}
-  var title = document.title.replace(/ \|.*$/, ''),
-      title = title.replace(/ \(Album\)/, ''),
-      title = title.split(' - '),
-      artist = title[1],
-      track = title[0]
-  return { artist:artist, track:track }
+  var href = window.location.href
+
+  // Deezer.com
+  if (document.title.match(/deezer\.com/)) {
+    var title = document.title.replace(/ \|.*$/, ''),
+        title = title.replace(/ \(Album\)/, ''),
+        title = title.split(' - ')
+    return { artist: title[1], track: title[0] }
+
+  // Accuradio.com
+  } else if (href.match(/player\.accuradio\.com/)) {
+    var track = document.getElementById('span_information_title'),
+        artist = document.getElementById('span_information_artist')
+    if (artist && track)
+      return { artist: artist.innerHTML, track: track.innerHTML }
+  }
+
+  return {}
 }
 
 
