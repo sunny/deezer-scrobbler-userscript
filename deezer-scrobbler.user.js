@@ -531,5 +531,5 @@ dzs.helpers.md5 = function(string) {
 }
 
 
-window.setTimeout(dzs.main, 1000)
+dzs.main()
 
